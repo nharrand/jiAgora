@@ -19,7 +19,7 @@ import static spark.Spark.post;
  */
 public class App 
 {
-    static int SERVER_PORT = 8000;
+    static int SERVER_PORT = 48000;
 
     public static Map<String,Room> rooms = new ConcurrentHashMap<>();
 
@@ -78,6 +78,22 @@ public class App
             }
         });
 
+        get("/usersRooms", (Request req, Response res) -> {
+            log(req);
+            JSONArray json = new JSONArray();
+            for(Room r: rooms.values()) {
+                for (User u : r.users.values()) {
+                    JSONObject us = u.toJSON();
+                    us.put("room", r.roomId);
+                    json.add(us.toJSONString());
+                }
+            }
+            res.status(200);
+            return json.toJSONString();
+        });
+
+
+
         post("/roomCreation", (Request req, Response res) -> {
             log(req);
             String raw = req.body();
@@ -131,6 +147,10 @@ public class App
                 String roomId = (String) info.getOrDefault("roomId", null);
                 JSONObject user = (JSONObject) info.getOrDefault("user", null);
                 Room r = rooms.get(roomId);
+                if(r == null) {
+                    r = new Room(roomId, roomId);
+                    rooms.put(roomId,r);
+                }
                 User u = new User((String) user.getOrDefault("id", null), (String) user.getOrDefault("name", null));
                 r.users.put(u.id,u);
             } catch (ClassCastException | NullPointerException e) {
