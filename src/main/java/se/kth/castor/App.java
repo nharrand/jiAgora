@@ -24,7 +24,7 @@ public class App
     public static Map<String,Room> rooms = new ConcurrentHashMap<>();
 
     public static void log(Request req) {
-        System.out.println("[In] " + req.body());
+        System.out.println("[" + req.ip() + "] " + req.pathInfo() + " -> " + req.body());
     }
 
     public static void main( String[] args )
