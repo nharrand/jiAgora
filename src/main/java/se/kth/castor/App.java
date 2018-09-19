@@ -11,9 +11,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
-import static spark.Spark.get;
-import static spark.Spark.port;
-import static spark.Spark.post;
+import static spark.Spark.*;
 
 /**
  * Hello world!
@@ -51,6 +49,9 @@ public class App
         URL_JITSI_MET = args[0];
         JSONParser p = new JSONParser();
         port(SERVER_PORT);
+
+        staticFiles.location("/resources");
+
         get("/", (Request req, Response res) -> {
             res.type("text/html");
             return getIndex();
