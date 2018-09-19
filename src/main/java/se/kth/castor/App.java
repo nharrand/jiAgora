@@ -51,7 +51,10 @@ public class App
         URL_JITSI_MET = args[0];
         JSONParser p = new JSONParser();
         port(SERVER_PORT);
-        get("/", (request, response) -> getIndex());
+        get("/", (Request req, Response res) -> {
+            res.type("text/html");
+            return getIndex();
+        });
 
         get("/completeInfo", (Request req, Response res) -> {
             log(req);
