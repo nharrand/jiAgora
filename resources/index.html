@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="fr-FR">
+<head>
+    <meta charset="utf-8">
+    <title>List des utilisateurs connectés</title>
+    <style>
+body {
+    width: 400px;
+    margin: auto;
+}
+
+table {
+    border: 1px solid black;
+}
+
+a:link {
+    color: black;
+}
+
+a:visited {
+    color: #333333;
+}
+
+a:hover {
+    color: #ff3300;
+}
+
+a:active {
+    color: #ff3300;
+}
+</style>
+</head>
+<body>
+
+<h2>List des utilisateurs connectés</h2>
+
+<p id="userlist"></p>
+
+<script>
+function refresh() {
+	var obj, xmlhttp, myObj, x, txt = "";
+	xmlhttp = new XMLHttpRequest();
+	xmlhttp.onreadystatechange = function() {
+		if (this.readyState == 4 && this.status == 200) {
+		    myObj = JSON.parse(this.responseText);
+		    txt += "<table>";
+		    txt += "<thead><tr><td>Room</td><td>Users</td></tr></thead><tbody>";
+		    for (x in myObj) {
+				room = myObj[x].name.split("@")[0];
+				users = myObj[x].users.length;
+		        txt += "<tr><td><a href=\"URL_JITSI_MEET" + room + "\">" + room + "</a></td><td>" + users + "</td></tr>";
+		    }
+		    txt += "</tbody></table>"
+		    document.getElementById("userlist").innerHTML = txt;
+		}
+	};
+	xmlhttp.open("GET", "completeInfo", true);
+	xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xmlhttp.send();
+}
+refresh();
+setInterval(function() {
+	refresh();
+}, 15000);//TODO replace with websocket
+</script>
+
+<p><a href="URL_JITSI_MEET">New Room</a></p>
+
+</body>
+</html>

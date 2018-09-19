@@ -6,8 +6,10 @@ import org.json.simple.parser.JSONParser;
 import spark.Request;
 import spark.Response;
 
+import java.io.*;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import static spark.Spark.get;
 import static spark.Spark.port;
@@ -20,6 +22,9 @@ import static spark.Spark.post;
 public class App 
 {
     static int SERVER_PORT = 48000;
+    static String pathToIndex = "/app/resources/index.html";
+    static String URL_JITSI_MET = "";
+    static String bufferedFrontPage;
 
     public static Map<String,Room> rooms = new ConcurrentHashMap<>();
 
@@ -27,11 +32,26 @@ public class App
         System.out.println("[" + req.ip() + "] " + req.pathInfo() + " -> " + req.body());
     }
 
+    public static String getIndex() {
+        if(bufferedFrontPage == null) {
+            BufferedReader reader = null;
+            try {
+                reader = new BufferedReader(new FileReader(new File(pathToIndex)));
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            bufferedFrontPage = reader.lines().collect(Collectors.joining(System.lineSeparator())).replace("URL_JITSI_MEET", URL_JITSI_MET);
+        }
+        return bufferedFrontPage;
+    }
+
     public static void main( String[] args )
     {
         System.out.println("Server is Starting on port " + SERVER_PORT);
+        URL_JITSI_MET = args[0];
         JSONParser p = new JSONParser();
         port(SERVER_PORT);
+        get("/", (request, response) -> getIndex());
 
         get("/completeInfo", (Request req, Response res) -> {
             log(req);
@@ -40,7 +60,8 @@ public class App
             for(Room r: rooms.values()) {
                 json.add(r.toJSON());
             }
-            return json.toJSONString();
+            res.type("application/json");
+            return json.toString();
         });
 
         get("/rooms", (Request req, Response res) -> {
@@ -50,6 +71,7 @@ public class App
             for(Room r: rooms.values()) {
                 json.add(r.toJSON());
             }
+            res.type("application/json");
             return json.toJSONString();
         });
 
@@ -70,6 +92,7 @@ public class App
                     json.add(u.toJSON());
                 }
                 res.status(200);
+                res.type("application/json");
                 return json.toJSONString();
 
             } catch (ClassCastException | NullPointerException e) {
@@ -85,10 +108,11 @@ public class App
                 for (User u : r.users.values()) {
                     JSONObject us = u.toJSON();
                     us.put("room", r.roomId);
-                    json.add(us.toJSONString());
+                    json.add(us);
                 }
             }
             res.status(200);
+            res.type("application/json");
             return json.toJSONString();
         });
 
@@ -162,6 +186,7 @@ public class App
         });
 
         post("/userLeave", (Request req, Response res) -> {
+            log(req);
             String raw = req.body();
             Object parsed = p.parse(raw);
             if(!(parsed instanceof  JSONObject)) {
