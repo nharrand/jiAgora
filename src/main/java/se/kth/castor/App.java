@@ -50,7 +50,7 @@ public class App
         JSONParser p = new JSONParser();
         port(SERVER_PORT);
 
-        staticFiles.location("/resources");
+        staticFiles.location("/app/resources");
 
         get("/", (Request req, Response res) -> {
             res.type("text/html");
