@@ -34,7 +34,7 @@ a:active {
 </head>
 <body>
 
-<h2>List des utilisateurs</h2>
+<h2>Liste des Salles</h2>
 
 <p id="userlist"></p>
 
@@ -46,7 +46,7 @@ function refresh() {
 		if (this.readyState == 4 && this.status == 200) {
 		    myObj = JSON.parse(this.responseText);
 		    txt += "<table>";
-		    txt += "<thead><tr><td>Room</td><td>Users</td></tr></thead><tbody>";
+		    txt += "<thead><tr><td>Salle</td><td>Utilisateurs</td></tr></thead><tbody>";
 		    for (x in myObj) {
 				room = myObj[x].name.split("@")[0];
 				users = myObj[x].users.length;

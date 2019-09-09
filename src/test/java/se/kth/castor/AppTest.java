@@ -8,6 +8,7 @@ import org.eclipse.jetty.client.api.Request;
 import org.eclipse.jetty.client.util.StringContentProvider;
 import org.eclipse.jetty.http.HttpHeader;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 /**
@@ -22,6 +23,8 @@ public class AppTest
     /**
      * Rigorous Test :-)
      */
+
+    @Ignore
     @Test
     public void test() throws Exception {
         HttpClient httpClient = new HttpClient();

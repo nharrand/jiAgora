@@ -7,14 +7,19 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Room {
+
+	public static String privatePrefix = "private";
+
 	protected Map<String, User> users;
 	protected String roomId;
 	protected String name;
+	protected boolean isPrivate = false;
 
 	public Room(String id, String name) {
 		this.name = name;
 		this.roomId = id;
 		this.users = new HashMap<>();
+		this.isPrivate = name.startsWith(privatePrefix);
 	}
 
 	public void addUser(User user) {

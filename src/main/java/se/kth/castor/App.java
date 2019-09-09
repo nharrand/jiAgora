@@ -19,9 +19,9 @@ import static spark.Spark.*;
  */
 public class App 
 {
-    static int SERVER_PORT = 48000;
+    static int SERVER_PORT = 80;
     static String pathToIndex = "/app/resources/index.html";
-    static String URL_JITSI_MET = "";
+    static String URL_JITSI_MEET = "";
     static String bufferedFrontPage;
 
     public static Map<String,Room> rooms = new ConcurrentHashMap<>();
@@ -38,7 +38,7 @@ public class App
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
             }
-            bufferedFrontPage = reader.lines().collect(Collectors.joining(System.lineSeparator())).replace("URL_JITSI_MEET", URL_JITSI_MET);
+            bufferedFrontPage = reader.lines().collect(Collectors.joining(System.lineSeparator())).replace("URL_JITSI_MEET", URL_JITSI_MEET);
         }
         return bufferedFrontPage;
     }
@@ -46,11 +46,11 @@ public class App
     public static void main( String[] args )
     {
         System.out.println("Server is Starting on port " + SERVER_PORT);
-        URL_JITSI_MET = args[0];
+        URL_JITSI_MEET = args[0];
         JSONParser p = new JSONParser();
         port(SERVER_PORT);
 
-        staticFiles.location("/app/resources");
+        staticFiles.externalLocation("/app/resources");
 
         get("/", (Request req, Response res) -> {
             res.type("text/html");
@@ -62,7 +62,9 @@ public class App
             res.status(200);
             JSONArray json = new JSONArray();
             for(Room r: rooms.values()) {
-                json.add(r.toJSON());
+                if(!r.isPrivate) {
+                    json.add(r.toJSON());
+                }
             }
             res.type("application/json");
             return json.toString();
@@ -154,6 +156,29 @@ public class App
             try {
                 String roomId = (String) room.getOrDefault("roomId", null);
                 rooms.remove(roomId);
+            } catch (ClassCastException | NullPointerException e) {
+                res.status(400);
+                return "Error, unable to parse JSON.";
+            }
+            res.status(200);
+            return "";
+        });
+
+        post("/setPrivate", (Request req, Response res) -> {
+            log(req);
+            String raw = req.body();
+            Object parsed = p.parse(raw);
+            if(!(parsed instanceof  JSONObject)) {
+                res.status(400);
+                return "Error, unable to parse JSON.";
+            }
+            JSONObject room = (JSONObject) parsed;
+            try {
+                String roomId = (String) room.getOrDefault("roomId", null);
+                Room r = rooms.get(roomId);
+                if(r != null) {
+                    r.isPrivate = true;
+                }
             } catch (ClassCastException | NullPointerException e) {
                 res.status(400);
                 return "Error, unable to parse JSON.";
